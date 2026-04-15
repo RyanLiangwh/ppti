@@ -60,6 +60,10 @@
   .dim-fill{height:100%;background:var(--navy);transition:width .8s}
   .dim-value{width:40px;text-align:right;color:var(--muted);font-family:"SF Mono",Menlo,monospace;font-size:12px}
 
+  .mapping{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:8px 0 24px}
+  .map-card{border:1px solid var(--line);border-radius:3px;padding:14px 16px;background:#fff}
+  .map-label{font-size:11px;color:var(--muted);letter-spacing:2px;margin-bottom:4px}
+  .map-value{font-size:15px;color:var(--navy);font-weight:600}
   .axes{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:24px 0}
   .axis{background:#f7f9fc;padding:16px;border-radius:3px}
   .axis-name{font-size:12px;color:var(--muted);letter-spacing:1px;margin-bottom:6px}
@@ -119,6 +123,7 @@
     <p class="result-tagline" id="resultTagline">—</p>
     <div class="result-desc" id="resultDesc">—</div>
 
+    <div class="mapping" id="mappingBox"></div>
     <div class="axes" id="axesBox"></div>
 
     <div class="dim-title">15 维度画像</div>
@@ -228,48 +233,68 @@ const questions = [
 // 16 personalities: code = P1(挥/闷) + P2(狗/铁) + T(框/野) + I(卷/佛)
 const personas = {
   '挥狗框卷': { name:'战略红人', tag:'老板的嫡系爱将·S 绩效常客',
-    desc:'PPT 一出惊天地，MECE 讲得比麦肯锡还溜，马屁拍得比 HR 还准。年度 S、晋升快车道，同事背后叫你"太子"，你听见了，但你不在乎——因为老板会替你出头。核心技能：用框架论证老板的直觉。' },
+    desc:'PPT 一出惊天地，MECE 讲得比麦肯锡还溜，马屁拍得比 HR 还准。年度 S、晋升快车道，同事背后叫你"太子"，你听见了，但你不在乎——因为老板会替你出头。核心技能：用框架论证老板的直觉。',
+    mbti:'ENTJ · 指挥官', sbti:'卷王' },
   '挥狗框佛': { name:'嘴炮军师', tag:'金句制造机·落地不负责',
-    desc:'"第二曲线""反脆弱""认知跃迁"张口就来。老板觉得你有 sense，同事觉得你有病。落地？那是业务的事。你的核心竞争力是让人觉得你在思考，至于在想啥，你自己也不知道。' },
+    desc:'"第二曲线""反脆弱""认知跃迁"张口就来。老板觉得你有 sense，同事觉得你有病。落地？那是业务的事。你的核心竞争力是让人觉得你在思考，至于在想啥，你自己也不知道。',
+    mbti:'ENTP · 辩论家', sbti:'嘴炮' },
   '挥狗野卷': { name:'政治动物', tag:'办公室才是你的主场',
-    desc:'逻辑？那是次要的。你真正的工作是揣摩圣意、站队、递刀。报告怎么写不重要，重要的是在哪个老板的局里。分析师只是你的 title，权谋才是你的主业。' },
+    desc:'逻辑？那是次要的。你真正的工作是揣摩圣意、站队、递刀。报告怎么写不重要，重要的是在哪个老板的局里。分析师只是你的 title，权谋才是你的主业。',
+    mbti:'ESFJ · 执政官', sbti:'戏精' },
   '挥狗野佛': { name:'酒局战略家', tag:'真本事在饭桌上',
-    desc:'真本事在饭桌上、在茶水间、在老板车上。报告让实习生写，你负责"把事情办了"。不卷不装，但永远在关键局里。同事觉得你神秘，老板觉得你懂事。' },
+    desc:'真本事在饭桌上、在茶水间、在老板车上。报告让实习生写，你负责"把事情办了"。不卷不装，但永远在关键局里。同事觉得你神秘，老板觉得你懂事。',
+    mbti:'ESFP · 表演者', sbti:'酒蒙子' },
   '挥铁框卷': { name:'理想主义战神', tag:'用 MECE 硬刚老板',
-    desc:'敢当面 challenge 老板，用 MECE 硬刚，用数据怼人。你相信战略的力量，相信真相应该被看见。下场通常是：要么成为传奇，要么被优化。中间选项不存在。' },
+    desc:'敢当面 challenge 老板，用 MECE 硬刚，用数据怼人。你相信战略的力量，相信真相应该被看见。下场通常是：要么成为传奇，要么被优化。中间选项不存在。',
+    mbti:'ENTJ · 指挥官（叛逆版）', sbti:'愣头青' },
   '挥铁框佛': { name:'清高嘴炮', tag:'看不起所有人·也懒得卷',
-    desc:'看不起拍马屁的、看不起卷的、看不起不懂框架的。你有想法、有框架、有判断，但你懒得卷，也懒得解释。朋友圈三天可见，领英精心打磨。' },
+    desc:'看不起拍马屁的、看不起卷的、看不起不懂框架的。你有想法、有框架、有判断，但你懒得卷，也懒得解释。朋友圈三天可见，领英精心打磨。',
+    mbti:'INTP · 逻辑学家（外放版）', sbti:'哲学家' },
   '挥铁野卷': { name:'野生意见领袖', tag:'直觉派·歪打正着',
-    desc:'不讲框架只讲直觉，经常歪打正着。老板问你要论证，你说"我感觉就是这样"——然后三个月后证明你是对的。问题是：你也说不清自己为啥对。' },
+    desc:'不讲框架只讲直觉，经常歪打正着。老板问你要论证，你说"我感觉就是这样"——然后三个月后证明你是对的。问题是：你也说不清自己为啥对。',
+    mbti:'ENFP · 活动家', sbti:'鬼才' },
   '挥铁野佛': { name:'愤青分析师', tag:'朋友圈大 V·日常骂公司',
-    desc:'朋友圈天天转"打工人觉醒""资本异化"，骂完继续上班。你看透一切，但你动不了。愤怒是你的人格底色，摆烂是你的生存策略。' },
+    desc:'朋友圈天天转"打工人觉醒""资本异化"，骂完继续上班。你看透一切，但你动不了。愤怒是你的人格底色，摆烂是你的生存策略。',
+    mbti:'ENFP · 活动家（怨气版）', sbti:'网暴侠' },
   '闷狗框卷': { name:'默默舔狗', tag:'不吭声的定制化交付者',
-    desc:'不吭声，但报告永远精准命中老板预期。框架扎实、数据靠谱、措辞谦卑。没人觉得你在舔，但你自己知道——每一页 PPT 都是为老板量身定制。' },
+    desc:'不吭声，但报告永远精准命中老板预期。框架扎实、数据靠谱、措辞谦卑。没人觉得你在舔，但你自己知道——每一页 PPT 都是为老板量身定制。',
+    mbti:'ISFJ · 守卫者', sbti:'老实人' },
   '闷狗框佛': { name:'工具人标兵', tag:'让人放心·没人记得住',
-    desc:'叫干啥干啥，MECE 用得熟，但没有自己的想法。老板让你拆问题你就拆，让你跑数你就跑。优点是：让人放心。缺点是：没人记得住你。' },
+    desc:'叫干啥干啥，MECE 用得熟，但没有自己的想法。老板让你拆问题你就拆，让你跑数你就跑。优点是：让人放心。缺点是：没人记得住你。',
+    mbti:'ISTJ · 物流师', sbti:'工具人' },
   '闷狗野卷': { name:'情报贩子', tag:'信息差就是你的护城河',
-    desc:'消息比 HRBP 还灵，谁要晋升、谁要走、哪个项目要黄，你第一个知道。真本事是串门和听墙角。报告平平，但信息差就是你的护城河。' },
+    desc:'消息比 HRBP 还灵，谁要晋升、谁要走、哪个项目要黄，你第一个知道。真本事是串门和听墙角。报告平平，但信息差就是你的护城河。',
+    mbti:'ISFP · 探险家（情报版）', sbti:'包打听' },
   '闷狗野佛': { name:'老油条', tag:'摸鱼有术·存在感稳定',
-    desc:'摸鱼有术，老板让改三版能交一版占坑，被骂就说"我再想想"。你深谙汇报之道：不求有功，但求存在感稳定。工龄就是你的铠甲。' },
+    desc:'摸鱼有术，老板让改三版能交一版占坑，被骂就说"我再想想"。你深谙汇报之道：不求有功，但求存在感稳定。工龄就是你的铠甲。',
+    mbti:'ISFP · 探险家', sbti:'摆烂人' },
   '闷铁框卷': { name:'数据原教旨', tag:'只信 SQL·看不起 PPT',
-    desc:'只信 SQL 和 Python，看不起做 PPT 的。"这数据口径就是不对""这个结论没有统计显著性"——你是团队的良心，也是老板的眼中钉。' },
+    desc:'只信 SQL 和 Python，看不起做 PPT 的。"这数据口径就是不对""这个结论没有统计显著性"——你是团队的良心，也是老板的眼中钉。',
+    mbti:'INTJ · 建筑师', sbti:'卷王（理科版）' },
   '闷铁框佛': { name:'高冷技术流', tag:'跑完数就下班·产出扎实',
-    desc:'我跑完数就下班，结论你们自己悟。不汇报、不站队、不社交。优点：产出扎实。缺点：晋升名单里永远没你，因为老板不知道你在干嘛。' },
+    desc:'我跑完数就下班，结论你们自己悟。不汇报、不站队、不社交。优点：产出扎实。缺点：晋升名单里永远没你，因为老板不知道你在干嘛。',
+    mbti:'INTP · 逻辑学家', sbti:'社恐' },
   '闷铁野卷': { name:'孤狼卷王', tag:'不搭理人·纯靠硬输出',
-    desc:'谁也不搭理，一个人闷头产出惊人。不走框架不搞政治，纯靠输出硬刚。老板又爱又头疼：爱你的产能，头疼你不听话。' },
+    desc:'谁也不搭理，一个人闷头产出惊人。不走框架不搞政治，纯靠输出硬刚。老板又爱又头疼：爱你的产能，头疼你不听话。',
+    mbti:'INTJ · 建筑师（孤狼版）', sbti:'独狼' },
   '闷铁野佛': { name:'纯粹打工魂', tag:'班味儿拉满·只想下班',
-    desc:'班味儿最重的一集。什么战略什么使命什么第二曲线，不如准点下班。来上班是为了活着，活着是为了下班。已经开始研究提前退休。' },
+    desc:'班味儿最重的一集。什么战略什么使命什么第二曲线，不如准点下班。来上班是为了活着，活着是为了下班。已经开始研究提前退休。',
+    mbti:'ISTP · 鉴赏家', sbti:'吗喽' },
 };
 
 const eggs = {
   'CLWN': { name:'小丑型', tag:'全员隐藏·战略分析师的终极形态',
-    desc:'你在答题的时候就在表演。你不是任何一种人格，你是所有人格的戏精合集。恭喜，你的本质是一个小丑——但这可能就是战略分析师的终极形态。' },
+    desc:'你在答题的时候就在表演。你不是任何一种人格，你是所有人格的戏精合集。恭喜，你的本质是一个小丑——但这可能就是战略分析师的终极形态。',
+    mbti:'XXXX · 变色龙', sbti:'小丑' },
   'BYEE': { name:'裸辞型', tag:'今天是最后一天·老板还不知道',
-    desc:'今天是你在这家公司的最后一天，只是老板还不知道。工位东西已经分批带走，钉钉勋章你不在乎了。下一步：先睡三个月。' },
+    desc:'今天是你在这家公司的最后一天，只是老板还不知道。工位东西已经分批带走，钉钉勋章你不在乎了。下一步：先睡三个月。',
+    mbti:'ISFP · 逃兵', sbti:'润人' },
   'GPAX': { name:'MBA 跑路型', tag:'战略分析只是跳板',
-    desc:'已经开始备考 GMAT，领英头像换成职业照，偷偷约校友喝咖啡。战略分析只是跳板，你的真正战略是跑路。预计 2 年后在欧洲 MBA 校园发朋友圈。' },
+    desc:'已经开始备考 GMAT，领英头像换成职业照，偷偷约校友喝咖啡。战略分析只是跳板，你的真正战略是跑路。预计 2 年后在欧洲 MBA 校园发朋友圈。',
+    mbti:'ENTJ · 指挥官（进修版）', sbti:'学霸' },
   'DRNK': { name:'酒蒙子战略型', tag:'好想法都是喝多了才有的',
-    desc:'你所有的好想法都是喝多了才有的，清醒的时候只会做 PPT。工作哲学：没有一顿酒解决不了的战略分歧，如果有，那就两顿。' },
+    desc:'你所有的好想法都是喝多了才有的，清醒的时候只会做 PPT。工作哲学：没有一顿酒解决不了的战略分歧，如果有，那就两顿。',
+    mbti:'ESFP · 表演者（持酒版）', sbti:'DRUNK' },
 };
 
 const dimensions = [
@@ -346,6 +371,12 @@ function computeResult(){
   document.getElementById('resultTagline').textContent = '「' + p.tag + '」';
   document.getElementById('resultDesc').textContent = p.desc;
 
+  // MBTI / SBTI mapping
+  document.getElementById('mappingBox').innerHTML = `
+    <div class="map-card"><div class="map-label">MBTI 近似</div><div class="map-value">${p.mbti}</div></div>
+    <div class="map-card"><div class="map-label">SBTI 近似</div><div class="map-value">${p.sbti}</div></div>
+  `;
+
   // Axes
   const axesBox = document.getElementById('axesBox');
   const axisLabels = [
@@ -370,7 +401,7 @@ function computeResult(){
     </div>`;
   }).join('');
 
-  window._result = { code: displayCode, name: p.name, tag: p.tag, desc: p.desc, axes: axisLabels };
+  window._result = { code: displayCode, name: p.name, tag: p.tag, desc: p.desc, axes: axisLabels, mbti: p.mbti, sbti: p.sbti };
   show('result');
 }
 
@@ -378,7 +409,7 @@ function computeResult(){
 function generateCard(){
   const r = window._result;
   const canvas = document.getElementById('shareCanvas');
-  const W=750, H=1100;
+  const W=750, H=1250;
   canvas.width=W; canvas.height=H;
   const ctx = canvas.getContext('2d');
 
@@ -425,6 +456,22 @@ function generateCard(){
   ctx.fillRect(60, 400, 4, 40 + descLines.length*30);
   ctx.fillStyle = '#0a2540';
   descLines.forEach(line=>{ ctx.fillText(line, 80, y); y+=30; });
+
+  // mapping
+  y += 40;
+  ctx.fillStyle = '#5a6b80';
+  ctx.font = '12px -apple-system,PingFang SC,sans-serif';
+  ctx.fillText('NEAREST NEIGHBORS', 60, y);
+  y += 22;
+  ctx.fillStyle = '#5a6b80'; ctx.font = '13px -apple-system,PingFang SC,sans-serif';
+  ctx.fillText('MBTI 近似', 60, y);
+  ctx.fillStyle = '#0a2540'; ctx.font = 'bold 15px -apple-system,PingFang SC,sans-serif';
+  ctx.fillText(r.mbti, 180, y);
+  y += 28;
+  ctx.fillStyle = '#5a6b80'; ctx.font = '13px -apple-system,PingFang SC,sans-serif';
+  ctx.fillText('SBTI 近似', 60, y);
+  ctx.fillStyle = '#0a2540'; ctx.font = 'bold 15px -apple-system,PingFang SC,sans-serif';
+  ctx.fillText(r.sbti, 180, y);
 
   // axes
   y += 40;
