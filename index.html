@@ -97,10 +97,10 @@
     <h1>PPTI 泛战略分析师人格测试</h1>
     <p class="subtitle">MBTI 太宽泛，SBTI 太沙雕。<br/>我们需要一个真正懂战略/商分/咨询/战投圈的人格测试。</p>
     <div class="meta">
-      <span><strong>12</strong> 道题</span>
+      <span><strong>16</strong> 道题</span>
       <span><strong>16</strong> 型人格</span>
       <span><strong>4</strong> 个隐藏彩蛋</span>
-      <span><strong>~2</strong> 分钟</span>
+      <span><strong>~3</strong> 分钟</span>
     </div>
     <p style="color:var(--muted);font-size:14px;margin:0 0 24px">四个维度，十六型人格。你是哪一种，测完才知道。</p>
     <button class="btn" onclick="start()">开始测试 →</button>
@@ -165,6 +165,13 @@ const questions = [
       ['《Q2 业务数据分析》', -1],
       ['《周报 0412》', -2],
     ]},
+  { axis:'P1', text:'大老板突然来你们部门，让你讲讲最近在做什么：',
+    options:[
+      ['三句话讲完战略价值，金句结尾，气场全开', 2],
+      ['认真介绍项目，逻辑清晰、数据扎实', 1],
+      ['简短说两句，让主管补充', -1],
+      ['眼神飘向主管，希望他接话', -2],
+    ]},
   { axis:'P2', text:'你做完分析，结论和老板预期完全相反：',
     options:[
       ['换三个数据口径，总有一版能支持老板', 2],
@@ -185,6 +192,13 @@ const questions = [
       ['调整一下口径和时间窗，不算造假', 1],
       ['可以优化表达方式，但数不能改', -1],
       ['这不就是造假？直接拒绝', -2],
+    ]},
+  { axis:'P2', text:'老板拍板一个你觉得明显有问题的战略方向：',
+    options:[
+      ['立刻跟进，用数据论证这个方向的合理性', 2],
+      ['照做为主，私下做点保护性分析', 1],
+      ['执行，但把风险明确写出来', -1],
+      ['当面指出问题，并给出替代方案', -2],
     ]},
   { axis:'T', text:'接到一个新课题，你第一反应是：',
     options:[
@@ -207,6 +221,13 @@ const questions = [
       ['经验直觉为主，框架是汇报工具', -1],
       ['玄学，跟着感觉走，反正老板也是拍脑袋', -2],
     ]},
+  { axis:'T', text:'做一份新行业分析，你最依赖的是：',
+    options:[
+      ['五力 / SWOT / 波特钻石 一套套走', 2],
+      ['先搭一个结构化的 Excel 分析框架', 1],
+      ['找几个行业老兵喝咖啡聊一聊', -1],
+      ['凭直觉先写几个 key takeaway，再倒推', -2],
+    ]},
   { axis:'I', text:'周五晚 9 点老板发来一个"小需求"：',
     options:[
       ['立刻开电脑，周末爆肝，周一早 8 点交付', 2],
@@ -228,11 +249,18 @@ const questions = [
       ['把去年模板改改日期和数字', -1],
       ['述职有啥用，反正绩效早就定了', -2],
     ]},
+  { axis:'I', text:'晋升答辩前一个月：',
+    options:[
+      ['排满演练，找 5 个人陪练，PPT 改了 20 版', 2],
+      ['认真准备，周末加班磨材料', 1],
+      ['把过去一年成果整理一下，差不多就行', -1],
+      ['答辩是形式，能过就过，不过明年再说', -2],
+    ]},
 ];
 
 // Interleave question order so axes don't cluster (avoid "last 3 are all I-axis" effect)
 (function interleave(){
-  const order = [0,3,6,9, 1,4,7,10, 2,5,8,11];
+  const order = [0,4,8,12, 1,5,9,13, 2,6,10,14, 3,7,11,15];
   const orig = questions.slice();
   for(let i=0;i<order.length;i++) questions[i] = orig[order[i]];
 })();
@@ -370,8 +398,8 @@ function computeResult(){
   const allD = answers.every(a=>a.idx===3);
   if(allA || allD) egg='CLWN';
   else if(byAxis.I.every(a=>a.idx===3)) egg='BYEE';
-  else if(p2<=-4 && iA<=-3 && tA<=-2) egg='GPAX';
-  else if(code==='挥狗野佛' && iA<=-3) egg='DRNK';
+  else if(p2<=-5 && iA<=-4 && tA<=-3) egg='GPAX';
+  else if(code==='挥狗野佛' && iA<=-4) egg='DRNK';
 
   const p = egg ? eggs[egg] : personas[code];
   const displayCode = egg || code;
@@ -390,7 +418,7 @@ function computeResult(){
   function intensity(s){
     const a=Math.abs(s);
     if(s===0) return '骑墙';
-    if(a>=5) return '纯种';
+    if(a>=6) return '纯种';
     if(a>=3) return '';
     return '微';
   }
@@ -405,12 +433,12 @@ function computeResult(){
     ['Intensity',    poleLabel(iA,'卷王事业批','佛系打工魂'), Math.abs(iA)],
   ];
   document.getElementById('axesBox').innerHTML = axisLabels.map(([n,v,s])=>`
-    <div class="axis"><div class="axis-name">${n}</div><div class="axis-val">${v} <span style="color:var(--muted);font-size:12px;font-weight:400">· 强度 ${s}/6</span></div></div>
+    <div class="axis"><div class="axis-name">${n}</div><div class="axis-val">${v} <span style="color:var(--muted);font-size:12px;font-weight:400">· 强度 ${s}/8</span></div></div>
   `).join('');
 
   // 15 dimensions — derived from actual answers
   const qAt = (axis,i)=>byAxis[axis][i].score;
-  const axN = x => Math.max(5, Math.min(95, Math.round((x+6)/12*100)));
+  const axN = x => Math.max(5, Math.min(95, Math.round((x+8)/16*100)));
   const axR = x => 100 - axN(x);
   const qN  = s => Math.max(10, Math.min(90, Math.round((s+2)/4*100)));
   const mix = (...parts) => {
@@ -529,7 +557,7 @@ function generateCard(){
     ctx.fillText(v, 200, y);
     ctx.fillStyle = '#c9a96e';
     ctx.font = '13px "SF Mono",Menlo,monospace';
-    ctx.fillText(s+'/6', W-120, y);
+    ctx.fillText(s+'/8', W-120, y);
     y += 36;
   });
 
