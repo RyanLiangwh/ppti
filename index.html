@@ -230,6 +230,13 @@ const questions = [
     ]},
 ];
 
+// Interleave question order so axes don't cluster (avoid "last 3 are all I-axis" effect)
+(function interleave(){
+  const order = [0,3,6,9, 1,4,7,10, 2,5,8,11];
+  const orig = questions.slice();
+  for(let i=0;i<order.length;i++) questions[i] = orig[order[i]];
+})();
+
 // 16 personalities: code = P1(挥/闷) + P2(狗/铁) + T(框/野) + I(卷/佛)
 const personas = {
   '挥狗框卷': { name:'战略红人', tag:'老板的嫡系爱将·S 绩效常客',
@@ -346,22 +353,25 @@ function next(){
 function prev(){ if(current>0){ current--; renderQ(); } }
 
 function computeResult(){
-  const sum = { P1:0, P2:0, T:0, I:0 };
-  answers.forEach(a=>{ sum[a.axis]+=a.score; });
+  const byAxis = { P1:[], P2:[], T:[], I:[] };
+  answers.forEach(a => byAxis[a.axis].push(a));
+  const p1 = byAxis.P1.reduce((s,a)=>s+a.score,0); // 挥 positive
+  const p2 = byAxis.P2.reduce((s,a)=>s+a.score,0); // 狗 positive
+  const tA = byAxis.T .reduce((s,a)=>s+a.score,0); // 框 positive
+  const iA = byAxis.I .reduce((s,a)=>s+a.score,0); // 卷 positive
+
   const code =
-    (sum.P1>=0?'挥':'闷') +
-    (sum.P2>=0?'狗':'铁') +
-    (sum.T >=0?'框':'野') +
-    (sum.I >=0?'卷':'佛');
+    (p1>=0?'挥':'闷') + (p2>=0?'狗':'铁') +
+    (tA>=0?'框':'野') + (iA>=0?'卷':'佛');
 
   // Eggs
   let egg = null;
   const allA = answers.every(a=>a.idx===0);
   const allD = answers.every(a=>a.idx===3);
   if(allA || allD) egg='CLWN';
-  else if(answers[9].idx===3 && answers[10].idx===3 && answers[11].idx===3) egg='BYEE';
-  else if(sum.P2<=-4 && sum.I<=-3 && sum.T<=-2) egg='GPAX';
-  else if(code==='挥狗野佛' && sum.I<=-3) egg='DRNK';
+  else if(byAxis.I.every(a=>a.idx===3)) egg='BYEE';
+  else if(p2<=-4 && iA<=-3 && tA<=-2) egg='GPAX';
+  else if(code==='挥狗野佛' && iA<=-3) egg='DRNK';
 
   const p = egg ? eggs[egg] : personas[code];
   const displayCode = egg || code;
@@ -371,35 +381,66 @@ function computeResult(){
   document.getElementById('resultTagline').textContent = '「' + p.tag + '」';
   document.getElementById('resultDesc').textContent = p.desc;
 
-  // MBTI / SBTI mapping
   document.getElementById('mappingBox').innerHTML = `
     <div class="map-card"><div class="map-label">MBTI 近似</div><div class="map-value">${p.mbti}</div></div>
     <div class="map-card"><div class="map-label">SBTI 近似</div><div class="map-value">${p.sbti}</div></div>
   `;
 
-  // Axes
-  const axesBox = document.getElementById('axesBox');
+  // Axes with intensity adjective
+  function intensity(s){
+    const a=Math.abs(s);
+    if(s===0) return '骑墙';
+    if(a>=5) return '纯种';
+    if(a>=3) return '';
+    return '微';
+  }
+  function poleLabel(s,pos,neg){
+    if(s===0) return '骑墙（' + pos + ' / ' + neg + '）';
+    return intensity(s) + (s>0?pos:neg);
+  }
   const axisLabels = [
-    ['Presentation', sum.P1>=0?'挥斥方遒':'闷头干活', Math.abs(sum.P1)],
-    ['Politics',     sum.P2>=0?'老板走狗':'头铁直男', Math.abs(sum.P2)],
-    ['Thinking',     sum.T >=0?'框架原教旨':'野路子', Math.abs(sum.T)],
-    ['Intensity',    sum.I >=0?'卷王事业批':'佛系打工魂', Math.abs(sum.I)],
+    ['Presentation', poleLabel(p1,'挥斥方遒','闷头干活'), Math.abs(p1)],
+    ['Politics',     poleLabel(p2,'老板走狗','头铁直男'), Math.abs(p2)],
+    ['Thinking',     poleLabel(tA,'框架原教旨','野路子'),  Math.abs(tA)],
+    ['Intensity',    poleLabel(iA,'卷王事业批','佛系打工魂'), Math.abs(iA)],
   ];
-  axesBox.innerHTML = axisLabels.map(([n,v,s])=>`
+  document.getElementById('axesBox').innerHTML = axisLabels.map(([n,v,s])=>`
     <div class="axis"><div class="axis-name">${n}</div><div class="axis-val">${v} <span style="color:var(--muted);font-size:12px;font-weight:400">· 强度 ${s}/6</span></div></div>
   `).join('');
 
-  // 15 dims (deterministic pseudo-random by code)
-  const seed = [...displayCode].reduce((a,c)=>a+c.charCodeAt(0),0) + sum.P1*7 + sum.P2*11 + sum.T*13 + sum.I*17;
-  const dimBox = document.getElementById('dimBox');
-  dimBox.innerHTML = dimensions.map((d,i)=>{
-    const v = 30 + ((Math.abs(Math.sin(seed + i*31.7)) * 100) | 0) % 66;
-    return `<div class="dim-row">
-      <div class="dim-label">${d}</div>
-      <div class="dim-bar"><div class="dim-fill" style="width:${v}%"></div></div>
-      <div class="dim-value">${v}%</div>
-    </div>`;
-  }).join('');
+  // 15 dimensions — derived from actual answers
+  const qAt = (axis,i)=>byAxis[axis][i].score;
+  const axN = x => Math.max(5, Math.min(95, Math.round((x+6)/12*100)));
+  const axR = x => 100 - axN(x);
+  const qN  = s => Math.max(10, Math.min(90, Math.round((s+2)/4*100)));
+  const mix = (...parts) => {
+    let s=0,w=0; for(const [v,wt] of parts){ s+=v*wt; w+=wt; }
+    return Math.max(5, Math.min(98, Math.round(s/w)));
+  };
+  const dims = [
+    ['PPT 美学指数',      mix([qN(qAt('P1',2)),0.6],[axN(p1),0.4])],
+    ['MECE 洁癖度',       mix([qN(qAt('T',1)), 0.7],[axN(tA),0.3])],
+    ['老板 PUA 承受力',   mix([axN(p2),0.8],[axN(iA),0.2])],
+    ['框架输出语速',      mix([axN(p1),0.5],[axN(tA),0.5])],
+    ['数据造假弹性',      mix([qN(qAt('P2',2)),0.7],[axN(p2),0.3])],
+    ['拍马屁 ROI',        axN(p2)],
+    ['周末响应速度',      qN(qAt('I',0))],
+    ['Issue Tree 依赖症', mix([qN(qAt('T',0)),0.6],[axN(tA),0.4])],
+    ['业务懂装不懂',      mix([axR(tA),0.5],[axN(p1),0.5])],
+    ['战略黑话储备量',    mix([qN(qAt('P1',2)),0.4],[axN(p1),0.3],[axN(tA),0.3])],
+    ['深夜改字号频率',    mix([axN(iA),0.7],[axN(p1),0.3])],
+    ['茶水间情报网',      mix([axN(p2),0.6],[axR(tA),0.4])],
+    ['MBA 跑路倾向',      mix([axR(iA),0.5],[axR(p2),0.3],[axN(p1),0.2])],
+    ['班味浓度',          mix([axR(iA),0.8],[axN(p2),0.2])],
+    ['自我怀疑指数',      mix([axR(iA),0.4],[Math.max(5,100-Math.abs(p1)*10),0.6])],
+  ];
+  document.getElementById('dimBox').innerHTML = dims.map(([label,val])=>`
+    <div class="dim-row">
+      <div class="dim-label">${label}</div>
+      <div class="dim-bar"><div class="dim-fill" style="width:${val}%"></div></div>
+      <div class="dim-value">${val}%</div>
+    </div>
+  `).join('');
 
   window._result = { code: displayCode, name: p.name, tag: p.tag, desc: p.desc, axes: axisLabels, mbti: p.mbti, sbti: p.sbti };
   show('result');
