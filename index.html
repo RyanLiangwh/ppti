@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>PPTI · 泛战略分析师人格测试</title>
+<meta name="description" content="MBTI 过时了，PPTI 来了。专属于战略/商分/咨询/战投的 16 型人格测试。" />
+<style>
+  :root{
+    --navy:#0a2540;
+    --navy-2:#12365f;
+    --accent:#c9a96e;
+    --text:#0a2540;
+    --muted:#5a6b80;
+    --line:#e3e8ef;
+    --bg:#f7f9fc;
+    --card:#ffffff;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue","PingFang SC","Microsoft YaHei",sans-serif;
+    -webkit-font-smoothing:antialiased;line-height:1.6}
+  .container{max-width:760px;margin:0 auto;padding:48px 24px 80px}
+  .brand{display:flex;align-items:center;gap:12px;margin-bottom:32px}
+  .brand-mark{width:36px;height:36px;background:var(--navy);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;letter-spacing:1px;border-radius:2px;font-size:13px}
+  .brand-name{font-weight:600;color:var(--navy);letter-spacing:2px}
+  .brand-sub{color:var(--muted);font-size:12px;margin-left:auto}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:4px;padding:40px;box-shadow:0 1px 2px rgba(10,37,64,.04)}
+  h1{font-size:32px;margin:0 0 12px;color:var(--navy);letter-spacing:-0.5px;font-weight:600}
+  h2{font-size:20px;color:var(--navy);margin:0 0 16px;font-weight:600}
+  .subtitle{color:var(--muted);font-size:15px;margin-bottom:32px}
+  .meta{display:flex;gap:20px;color:var(--muted);font-size:13px;margin-bottom:24px;padding-bottom:20px;border-bottom:1px solid var(--line)}
+  .meta span strong{color:var(--navy);font-weight:600}
+  .btn{display:inline-block;background:var(--navy);color:#fff;border:none;padding:14px 32px;font-size:15px;border-radius:2px;cursor:pointer;letter-spacing:1px;transition:background .2s;font-family:inherit}
+  .btn:hover{background:var(--navy-2)}
+  .btn-ghost{background:transparent;color:var(--navy);border:1px solid var(--navy)}
+  .btn-ghost:hover{background:var(--navy);color:#fff}
+  .btn-row{display:flex;gap:12px;flex-wrap:wrap;margin-top:24px}
+
+  .progress{height:3px;background:var(--line);border-radius:2px;margin-bottom:32px;overflow:hidden}
+  .progress-bar{height:100%;background:var(--navy);transition:width .3s}
+  .q-num{color:var(--accent);font-size:13px;letter-spacing:2px;margin-bottom:8px;font-weight:600}
+  .q-text{font-size:18px;color:var(--navy);margin:0 0 24px;font-weight:500;line-height:1.5}
+  .options{display:flex;flex-direction:column;gap:10px}
+  .option{display:flex;align-items:flex-start;gap:12px;padding:16px 18px;border:1px solid var(--line);border-radius:3px;cursor:pointer;transition:all .15s;background:#fff;text-align:left;font-family:inherit;font-size:14.5px;color:var(--text);line-height:1.5}
+  .option:hover{border-color:var(--navy);background:#f7f9fc}
+  .option.selected{border-color:var(--navy);background:var(--navy);color:#fff}
+  .option-letter{width:24px;height:24px;border:1px solid currentColor;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;flex-shrink:0;margin-top:1px}
+  .nav{display:flex;justify-content:space-between;margin-top:32px}
+
+  /* Result page */
+  .result-code{font-family:"SF Mono",Menlo,monospace;color:var(--accent);letter-spacing:4px;font-size:14px;margin-bottom:8px}
+  .result-name{font-size:40px;font-weight:700;color:var(--navy);margin:0 0 16px;letter-spacing:-1px}
+  .result-tagline{font-size:16px;color:var(--muted);font-style:italic;margin-bottom:28px}
+  .result-desc{font-size:15px;color:var(--text);background:#f7f9fc;padding:24px;border-left:3px solid var(--accent);margin-bottom:32px;border-radius:2px}
+  .dim-title{font-size:13px;color:var(--muted);letter-spacing:2px;margin:32px 0 16px;text-transform:uppercase;font-weight:600}
+  .dim-row{display:flex;align-items:center;gap:12px;margin-bottom:10px;font-size:13px}
+  .dim-label{width:120px;color:var(--text);flex-shrink:0}
+  .dim-bar{flex:1;height:6px;background:var(--line);border-radius:3px;overflow:hidden}
+  .dim-fill{height:100%;background:var(--navy);transition:width .8s}
+  .dim-value{width:40px;text-align:right;color:var(--muted);font-family:"SF Mono",Menlo,monospace;font-size:12px}
+
+  .axes{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:24px 0}
+  .axis{background:#f7f9fc;padding:16px;border-radius:3px}
+  .axis-name{font-size:12px;color:var(--muted);letter-spacing:1px;margin-bottom:6px}
+  .axis-val{font-size:18px;color:var(--navy);font-weight:600}
+
+  .footer{text-align:center;color:var(--muted);font-size:12px;margin-top:40px;letter-spacing:1px}
+  .divider{height:1px;background:var(--line);margin:32px 0}
+
+  /* Share card */
+  #shareCard{display:none}
+  .hidden{display:none !important}
+  @media(max-width:600px){
+    .container{padding:24px 16px 60px}
+    .card{padding:24px}
+    h1{font-size:26px}
+    .result-name{font-size:32px}
+    .axes{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="brand">
+    <div class="brand-mark">P</div>
+    <div class="brand-name">PPTI</div>
+    <div class="brand-sub">Personality · PPT · Test · Index</div>
+  </div>
+
+  <!-- Intro -->
+  <div id="intro" class="card">
+    <h1>PPTI 泛战略分析师人格测试</h1>
+    <p class="subtitle">MBTI 太宽泛，SBTI 太沙雕。<br/>我们需要一个真正懂战略/商分/咨询/战投圈的人格测试。</p>
+    <div class="meta">
+      <span><strong>12</strong> 道题</span>
+      <span><strong>16</strong> 型人格</span>
+      <span><strong>4</strong> 个隐藏彩蛋</span>
+      <span><strong>~2</strong> 分钟</span>
+    </div>
+    <p style="color:var(--muted);font-size:14px;margin:0 0 24px">四个维度，十六型人格。你是哪一种，测完才知道。</p>
+    <button class="btn" onclick="start()">开始测试 →</button>
+  </div>
+
+  <!-- Quiz -->
+  <div id="quiz" class="card hidden">
+    <div class="progress"><div class="progress-bar" id="progressBar"></div></div>
+    <div id="questionArea"></div>
+    <div class="nav">
+      <button class="btn btn-ghost" id="prevBtn" onclick="prev()">← 上一题</button>
+      <button class="btn" id="nextBtn" onclick="next()" disabled>下一题 →</button>
+    </div>
+  </div>
+
+  <!-- Result -->
+  <div id="result" class="card hidden">
+    <div class="result-code" id="resultCode">— — — —</div>
+    <h1 class="result-name" id="resultName">—</h1>
+    <p class="result-tagline" id="resultTagline">—</p>
+    <div class="result-desc" id="resultDesc">—</div>
+
+    <div class="axes" id="axesBox"></div>
+
+    <div class="dim-title">15 维度画像</div>
+    <div id="dimBox"></div>
+
+    <div class="divider"></div>
+    <div class="btn-row">
+      <button class="btn" onclick="generateCard()">生成分享卡片</button>
+      <button class="btn btn-ghost" onclick="restart()">重新测试</button>
+    </div>
+    <canvas id="shareCanvas" style="display:none"></canvas>
+    <div id="shareCardArea" style="margin-top:24px"></div>
+  </div>
+
+  <div class="footer">© PPTI · 本测试纯属娱乐 · 如有雷同 · 那就是你</div>
+</div>
+
+<script>
+// ===== Data =====
+const questions = [
+  { axis:'P1', text:'周会上老板问"大家有什么想法？"，你：',
+    options:[
+      ['第一个开麦，金句连发，顺便 framing 一下整个讨论', 2],
+      ['准备了两页纸，条理清晰地分享观点', 1],
+      ['等两三个人发言后再补充一句', -1],
+      ['眼神飘向窗外，祈祷老板别点名', -2],
+    ]},
+  { axis:'P1', text:'同事汇报时你发现一个明显的逻辑漏洞，你：',
+    options:[
+      ['当场微笑指出："我 challenge 一下啊……"', 2],
+      ['等 Q&A 环节委婉地提问引导', 1],
+      ['会后私聊发微信提醒', -1],
+      ['不关我事，他开心就好', -2],
+    ]},
+  { axis:'P1', text:'你 PPT 封面最可能的标题：',
+    options:[
+      ['《重塑增长范式·穿越周期迷雾——XX 业务战略思考》', 2],
+      ['《XX 业务增长机会分析与建议》', 1],
+      ['《Q2 业务数据分析》', -1],
+      ['《周报 0412》', -2],
+    ]},
+  { axis:'P2', text:'你做完分析，结论和老板预期完全相反：',
+    options:[
+      ['换三个数据口径，总有一版能支持老板', 2],
+      ['软化措辞，结论藏在第 20 页小字里', 1],
+      ['照实汇报，加一句"供老板参考"', -1],
+      ['标红加粗写在第一页，准备据理力争', -2],
+    ]},
+  { axis:'P2', text:'老板在大群里发了个观点，你：',
+    options:[
+      ['秒回"老板这个洞察太精准了，我补充三点"', 2],
+      ['过 5 分钟发个"赞同+学习了"', 1],
+      ['已读，观望', -1],
+      ['内心 OS：又开始了', -2],
+    ]},
+  { axis:'P2', text:'业务方委婉请你"把数据讲得好看一点"：',
+    options:[
+      ['懂的都懂，一起把故事讲圆', 2],
+      ['调整一下口径和时间窗，不算造假', 1],
+      ['可以优化表达方式，但数不能改', -1],
+      ['这不就是造假？直接拒绝', -2],
+    ]},
+  { axis:'T', text:'接到一个新课题，你第一反应是：',
+    options:[
+      ['打开 PPT，先画个 Issue Tree 或 2x2 矩阵', 2],
+      ['翻一下 BCG / 麦肯锡有没有类似案例', 1],
+      ['拉两个一线同事吃个饭先聊聊', -1],
+      ['凭直觉先写个结论，再倒推论据', -2],
+    ]},
+  { axis:'T', text:'对 MECE 原则的态度：',
+    options:[
+      ['战略分析的基石，不 MECE 就是耍流氓', 2],
+      ['重要，但不用每次都严格套', 1],
+      ['听过，实际工作里没那么看重', -1],
+      ['MECE 是啥？能吃吗？', -2],
+    ]},
+  { axis:'T', text:'你更相信哪种判断方式：',
+    options:[
+      ['结构化拆解+数据验证，万事皆可框架', 2],
+      ['框架为主，直觉辅助', 1],
+      ['经验直觉为主，框架是汇报工具', -1],
+      ['玄学，跟着感觉走，反正老板也是拍脑袋', -2],
+    ]},
+  { axis:'I', text:'周五晚 9 点老板发来一个"小需求"：',
+    options:[
+      ['立刻开电脑，周末爆肝，周一早 8 点交付', 2],
+      ['回"收到老板"，周日晚上做完', 1],
+      ['已读，周一上午交', -1],
+      ['假装没看见，周一装作刚看到', -2],
+    ]},
+  { axis:'I', text:'对"战略分析能改变公司"这件事：',
+    options:[
+      ['当然，这是我存在的价值，使命感拉满', 2],
+      ['有时能，至少能影响一些决策', 1],
+      ['大多数时候只是给老板的决定找论据', -1],
+      ['呵呵，我们就是 PPT 民工', -2],
+    ]},
+  { axis:'I', text:'年底述职前一周：',
+    options:[
+      ['熬夜打磨 PPT，对着镜子演练三遍', 2],
+      ['认真整理年度成果，周末加班完成', 1],
+      ['把去年模板改改日期和数字', -1],
+      ['述职有啥用，反正绩效早就定了', -2],
+    ]},
+];
+
+// 16 personalities: code = P1(挥/闷) + P2(狗/铁) + T(框/野) + I(卷/佛)
+const personas = {
+  '挥狗框卷': { name:'战略红人', tag:'老板的嫡系爱将·S 绩效常客',
+    desc:'PPT 一出惊天地，MECE 讲得比麦肯锡还溜，马屁拍得比 HR 还准。年度 S、晋升快车道，同事背后叫你"太子"，你听见了，但你不在乎——因为老板会替你出头。核心技能：用框架论证老板的直觉。' },
+  '挥狗框佛': { name:'嘴炮军师', tag:'金句制造机·落地不负责',
+    desc:'"第二曲线""反脆弱""认知跃迁"张口就来。老板觉得你有 sense，同事觉得你有病。落地？那是业务的事。你的核心竞争力是让人觉得你在思考，至于在想啥，你自己也不知道。' },
+  '挥狗野卷': { name:'政治动物', tag:'办公室才是你的主场',
+    desc:'逻辑？那是次要的。你真正的工作是揣摩圣意、站队、递刀。报告怎么写不重要，重要的是在哪个老板的局里。分析师只是你的 title，权谋才是你的主业。' },
+  '挥狗野佛': { name:'酒局战略家', tag:'真本事在饭桌上',
+    desc:'真本事在饭桌上、在茶水间、在老板车上。报告让实习生写，你负责"把事情办了"。不卷不装，但永远在关键局里。同事觉得你神秘，老板觉得你懂事。' },
+  '挥铁框卷': { name:'理想主义战神', tag:'用 MECE 硬刚老板',
+    desc:'敢当面 challenge 老板，用 MECE 硬刚，用数据怼人。你相信战略的力量，相信真相应该被看见。下场通常是：要么成为传奇，要么被优化。中间选项不存在。' },
+  '挥铁框佛': { name:'清高嘴炮', tag:'看不起所有人·也懒得卷',
+    desc:'看不起拍马屁的、看不起卷的、看不起不懂框架的。你有想法、有框架、有判断，但你懒得卷，也懒得解释。朋友圈三天可见，领英精心打磨。' },
+  '挥铁野卷': { name:'野生意见领袖', tag:'直觉派·歪打正着',
+    desc:'不讲框架只讲直觉，经常歪打正着。老板问你要论证，你说"我感觉就是这样"——然后三个月后证明你是对的。问题是：你也说不清自己为啥对。' },
+  '挥铁野佛': { name:'愤青分析师', tag:'朋友圈大 V·日常骂公司',
+    desc:'朋友圈天天转"打工人觉醒""资本异化"，骂完继续上班。你看透一切，但你动不了。愤怒是你的人格底色，摆烂是你的生存策略。' },
+  '闷狗框卷': { name:'默默舔狗', tag:'不吭声的定制化交付者',
+    desc:'不吭声，但报告永远精准命中老板预期。框架扎实、数据靠谱、措辞谦卑。没人觉得你在舔，但你自己知道——每一页 PPT 都是为老板量身定制。' },
+  '闷狗框佛': { name:'工具人标兵', tag:'让人放心·没人记得住',
+    desc:'叫干啥干啥，MECE 用得熟，但没有自己的想法。老板让你拆问题你就拆，让你跑数你就跑。优点是：让人放心。缺点是：没人记得住你。' },
+  '闷狗野卷': { name:'情报贩子', tag:'信息差就是你的护城河',
+    desc:'消息比 HRBP 还灵，谁要晋升、谁要走、哪个项目要黄，你第一个知道。真本事是串门和听墙角。报告平平，但信息差就是你的护城河。' },
+  '闷狗野佛': { name:'老油条', tag:'摸鱼有术·存在感稳定',
+    desc:'摸鱼有术，老板让改三版能交一版占坑，被骂就说"我再想想"。你深谙汇报之道：不求有功，但求存在感稳定。工龄就是你的铠甲。' },
+  '闷铁框卷': { name:'数据原教旨', tag:'只信 SQL·看不起 PPT',
+    desc:'只信 SQL 和 Python，看不起做 PPT 的。"这数据口径就是不对""这个结论没有统计显著性"——你是团队的良心，也是老板的眼中钉。' },
+  '闷铁框佛': { name:'高冷技术流', tag:'跑完数就下班·产出扎实',
+    desc:'我跑完数就下班，结论你们自己悟。不汇报、不站队、不社交。优点：产出扎实。缺点：晋升名单里永远没你，因为老板不知道你在干嘛。' },
+  '闷铁野卷': { name:'孤狼卷王', tag:'不搭理人·纯靠硬输出',
+    desc:'谁也不搭理，一个人闷头产出惊人。不走框架不搞政治，纯靠输出硬刚。老板又爱又头疼：爱你的产能，头疼你不听话。' },
+  '闷铁野佛': { name:'纯粹打工魂', tag:'班味儿拉满·只想下班',
+    desc:'班味儿最重的一集。什么战略什么使命什么第二曲线，不如准点下班。来上班是为了活着，活着是为了下班。已经开始研究提前退休。' },
+};
+
+const eggs = {
+  'CLWN': { name:'小丑型', tag:'全员隐藏·战略分析师的终极形态',
+    desc:'你在答题的时候就在表演。你不是任何一种人格，你是所有人格的戏精合集。恭喜，你的本质是一个小丑——但这可能就是战略分析师的终极形态。' },
+  'BYEE': { name:'裸辞型', tag:'今天是最后一天·老板还不知道',
+    desc:'今天是你在这家公司的最后一天，只是老板还不知道。工位东西已经分批带走，钉钉勋章你不在乎了。下一步：先睡三个月。' },
+  'GPAX': { name:'MBA 跑路型', tag:'战略分析只是跳板',
+    desc:'已经开始备考 GMAT，领英头像换成职业照，偷偷约校友喝咖啡。战略分析只是跳板，你的真正战略是跑路。预计 2 年后在欧洲 MBA 校园发朋友圈。' },
+  'DRNK': { name:'酒蒙子战略型', tag:'好想法都是喝多了才有的',
+    desc:'你所有的好想法都是喝多了才有的，清醒的时候只会做 PPT。工作哲学：没有一顿酒解决不了的战略分歧，如果有，那就两顿。' },
+};
+
+const dimensions = [
+  'PPT 美学指数','MECE 洁癖度','老板 PUA 承受力','框架输出语速','数据造假弹性',
+  '拍马屁 ROI','周末响应速度','Issue Tree 依赖症','业务懂装不懂','战略黑话储备量',
+  '深夜改字号频率','茶水间情报网','MBA 跑路倾向','班味浓度','自我怀疑指数'
+];
+
+// ===== State =====
+let current = 0;
+let answers = new Array(questions.length).fill(null); // score value
+
+function show(id){
+  ['intro','quiz','result'].forEach(x=>document.getElementById(x).classList.add('hidden'));
+  document.getElementById(id).classList.remove('hidden');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function start(){ current=0; answers.fill(null); show('quiz'); renderQ(); }
+function restart(){ show('intro'); }
+
+function renderQ(){
+  const q = questions[current];
+  const area = document.getElementById('questionArea');
+  area.innerHTML = `
+    <div class="q-num">第 ${current+1} / ${questions.length} 题 · ${q.axis} 轴</div>
+    <div class="q-text">${q.text}</div>
+    <div class="options">
+      ${q.options.map((opt,i)=>{
+        const letter = ['A','B','C','D'][i];
+        const sel = answers[current]!==null && answers[current].idx===i ? 'selected' : '';
+        return `<button class="option ${sel}" onclick="pick(${i},${opt[1]})">
+          <span class="option-letter">${letter}</span><span>${opt[0]}</span>
+        </button>`;
+      }).join('')}
+    </div>`;
+  document.getElementById('progressBar').style.width = ((current)/questions.length*100)+'%';
+  document.getElementById('prevBtn').disabled = current===0;
+  document.getElementById('nextBtn').disabled = answers[current]===null;
+  document.getElementById('nextBtn').textContent = current===questions.length-1 ? '查看结果 →' : '下一题 →';
+}
+function pick(idx, score){
+  answers[current] = { idx, score, axis: questions[current].axis };
+  renderQ();
+}
+function next(){
+  if(current < questions.length-1){ current++; renderQ(); }
+  else { computeResult(); }
+}
+function prev(){ if(current>0){ current--; renderQ(); } }
+
+function computeResult(){
+  const sum = { P1:0, P2:0, T:0, I:0 };
+  answers.forEach(a=>{ sum[a.axis]+=a.score; });
+  const code =
+    (sum.P1>=0?'挥':'闷') +
+    (sum.P2>=0?'狗':'铁') +
+    (sum.T >=0?'框':'野') +
+    (sum.I >=0?'卷':'佛');
+
+  // Eggs
+  let egg = null;
+  const allA = answers.every(a=>a.idx===0);
+  const allD = answers.every(a=>a.idx===3);
+  if(allA || allD) egg='CLWN';
+  else if(answers[9].idx===3 && answers[10].idx===3 && answers[11].idx===3) egg='BYEE';
+  else if(sum.P2<=-4 && sum.I<=-3 && sum.T<=-2) egg='GPAX';
+  else if(code==='挥狗野佛' && sum.I<=-3) egg='DRNK';
+
+  const p = egg ? eggs[egg] : personas[code];
+  const displayCode = egg || code;
+
+  document.getElementById('resultCode').textContent = displayCode.split('').join(' · ');
+  document.getElementById('resultName').textContent = p.name;
+  document.getElementById('resultTagline').textContent = '「' + p.tag + '」';
+  document.getElementById('resultDesc').textContent = p.desc;
+
+  // Axes
+  const axesBox = document.getElementById('axesBox');
+  const axisLabels = [
+    ['Presentation', sum.P1>=0?'挥斥方遒':'闷头干活', Math.abs(sum.P1)],
+    ['Politics',     sum.P2>=0?'老板走狗':'头铁直男', Math.abs(sum.P2)],
+    ['Thinking',     sum.T >=0?'框架原教旨':'野路子', Math.abs(sum.T)],
+    ['Intensity',    sum.I >=0?'卷王事业批':'佛系打工魂', Math.abs(sum.I)],
+  ];
+  axesBox.innerHTML = axisLabels.map(([n,v,s])=>`
+    <div class="axis"><div class="axis-name">${n}</div><div class="axis-val">${v} <span style="color:var(--muted);font-size:12px;font-weight:400">· 强度 ${s}/6</span></div></div>
+  `).join('');
+
+  // 15 dims (deterministic pseudo-random by code)
+  const seed = [...displayCode].reduce((a,c)=>a+c.charCodeAt(0),0) + sum.P1*7 + sum.P2*11 + sum.T*13 + sum.I*17;
+  const dimBox = document.getElementById('dimBox');
+  dimBox.innerHTML = dimensions.map((d,i)=>{
+    const v = 30 + ((Math.abs(Math.sin(seed + i*31.7)) * 100) | 0) % 66;
+    return `<div class="dim-row">
+      <div class="dim-label">${d}</div>
+      <div class="dim-bar"><div class="dim-fill" style="width:${v}%"></div></div>
+      <div class="dim-value">${v}%</div>
+    </div>`;
+  }).join('');
+
+  window._result = { code: displayCode, name: p.name, tag: p.tag, desc: p.desc, axes: axisLabels };
+  show('result');
+}
+
+// ===== Share card =====
+function generateCard(){
+  const r = window._result;
+  const canvas = document.getElementById('shareCanvas');
+  const W=750, H=1100;
+  canvas.width=W; canvas.height=H;
+  const ctx = canvas.getContext('2d');
+
+  // bg
+  ctx.fillStyle = '#f7f9fc'; ctx.fillRect(0,0,W,H);
+  // top navy band
+  ctx.fillStyle = '#0a2540'; ctx.fillRect(0,0,W,180);
+
+  // brand
+  ctx.fillStyle = '#c9a96e';
+  ctx.font = 'bold 14px -apple-system,PingFang SC,sans-serif';
+  ctx.fillText('P P T I', 60, 70);
+  ctx.fillStyle = '#ffffff';
+  ctx.font = '13px -apple-system,PingFang SC,sans-serif';
+  ctx.fillText('泛战略分析师人格测试', 60, 95);
+  ctx.font = '12px -apple-system,PingFang SC,sans-serif';
+  ctx.fillStyle = '#8a9bb0';
+  ctx.fillText('Personality · PPT · Test · Index', 60, 118);
+
+  // code
+  ctx.fillStyle = '#c9a96e';
+  ctx.font = 'bold 28px "SF Mono",Menlo,monospace';
+  ctx.fillText(r.code.split('').join(' · '), 60, 250);
+
+  // name
+  ctx.fillStyle = '#0a2540';
+  ctx.font = 'bold 58px -apple-system,PingFang SC,sans-serif';
+  ctx.fillText(r.name, 60, 325);
+
+  // tag
+  ctx.fillStyle = '#5a6b80';
+  ctx.font = 'italic 20px -apple-system,PingFang SC,sans-serif';
+  ctx.fillText('「' + r.tag + '」', 60, 365);
+
+  // desc (wrap)
+  ctx.fillStyle = '#0a2540';
+  ctx.font = '17px -apple-system,PingFang SC,sans-serif';
+  const descLines = wrap(ctx, r.desc, W-120);
+  let y = 430;
+  // background for desc
+  ctx.fillStyle = '#ffffff';
+  ctx.fillRect(60, 400, W-120, 40 + descLines.length*30);
+  ctx.fillStyle = '#c9a96e';
+  ctx.fillRect(60, 400, 4, 40 + descLines.length*30);
+  ctx.fillStyle = '#0a2540';
+  descLines.forEach(line=>{ ctx.fillText(line, 80, y); y+=30; });
+
+  // axes
+  y += 40;
+  ctx.fillStyle = '#5a6b80';
+  ctx.font = '12px -apple-system,PingFang SC,sans-serif';
+  ctx.fillText('4 DIMENSIONS', 60, y);
+  y += 24;
+  r.axes.forEach(([n,v,s])=>{
+    ctx.fillStyle = '#5a6b80';
+    ctx.font = '13px -apple-system,PingFang SC,sans-serif';
+    ctx.fillText(n, 60, y);
+    ctx.fillStyle = '#0a2540';
+    ctx.font = 'bold 18px -apple-system,PingFang SC,sans-serif';
+    ctx.fillText(v, 200, y);
+    ctx.fillStyle = '#c9a96e';
+    ctx.font = '13px "SF Mono",Menlo,monospace';
+    ctx.fillText(s+'/6', W-120, y);
+    y += 36;
+  });
+
+  // footer
+  ctx.fillStyle = '#5a6b80';
+  ctx.font = '12px -apple-system,PingFang SC,sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('PPTI · 泛战略分析师人格测试 · 本测试纯属娱乐', W/2, H-50);
+  ctx.textAlign = 'left';
+
+  // Render img
+  const url = canvas.toDataURL('image/png');
+  const area = document.getElementById('shareCardArea');
+  area.innerHTML = `
+    <div style="text-align:center;margin-top:16px">
+      <img src="${url}" style="max-width:100%;border:1px solid var(--line);border-radius:4px"/>
+      <p style="color:var(--muted);font-size:13px;margin-top:12px">长按图片保存，或右键另存为</p>
+      <a href="${url}" download="PPTI-${r.code}-${r.name}.png" class="btn" style="margin-top:8px;text-decoration:none;display:inline-block">下载图片</a>
+    </div>`;
+}
+
+function wrap(ctx, text, maxW){
+  const chars = [...text];
+  const lines = [];
+  let line = '';
+  for(const ch of chars){
+    const test = line + ch;
+    if(ctx.measureText(test).width > maxW){ lines.push(line); line = ch; }
+    else line = test;
+  }
+  if(line) lines.push(line);
+  return lines;
+}
+</script>
+</body>
+</html>
